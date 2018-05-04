@@ -29,7 +29,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
         Log.v("Adapter position" , Integer.toString(position));
         try {
             if (contactCursor.moveToPosition(position)) {
-                holder.contactName.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
+                holder.contactName.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
                 holder.contactNumber.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
 
 

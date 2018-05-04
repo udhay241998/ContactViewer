@@ -22,7 +22,7 @@ import android.util.Log;
 import java.net.URI;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
-private final Uri contactUri = ContactsContract.Contacts.CONTENT_URI;
+private final Uri contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
 private Cursor contactCursor;
 private static final int LOADER_ID = 100;
 private RecyclerView contactRecyclerView;
@@ -42,7 +42,10 @@ private ContactAdapter contactAdapter;
         }else {
             manager.restartLoader(LOADER_ID, null, this);
         }
-  Cursor data = this.getContentResolver().query(contactUri , null , null , null ,null);
+        String[] projection    = new String[] {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NUMBER};
+
+        Cursor data = this.getContentResolver().query(contactUri , projection , null , null ,null);
 contactRecyclerView = findViewById(R.id.contact_recycle);
         if(data != null) {
     contactCursor = data;
