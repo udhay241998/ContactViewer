@@ -35,26 +35,17 @@ private ContactAdapter contactAdapter;
         if(ContextCompat.checkSelfPermission(this , Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 24);
         }
+        contactRecyclerView = findViewById(R.id.contact_recycle);
         LoaderManager manager = getSupportLoaderManager();
         Loader<Cursor> loader = manager.getLoader(LOADER_ID);
         if(loader == null){
-            manager.initLoader(LOADER_ID , null ,this);
+            manager.initLoader(LOADER_ID , null ,this).forceLoad();
         }else {
-            manager.restartLoader(LOADER_ID, null, this);
+            manager.restartLoader(LOADER_ID, null, this).forceLoad();
         }
-        String[] projection    = new String[] {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.NUMBER};
 
-        Cursor data = this.getContentResolver().query(contactUri , projection , null , null ,null);
-contactRecyclerView = findViewById(R.id.contact_recycle);
-        if(data != null) {
-    contactCursor = data;
 
-    contactAdapter = new ContactAdapter(data);
-    contactRecyclerView.setItemAnimator(new DefaultItemAnimator());
-    contactRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-    contactRecyclerView.setAdapter(contactAdapter);
-}
+
     }
 
     @NonNull
@@ -69,14 +60,14 @@ contactRecyclerView = findViewById(R.id.contact_recycle);
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
 
 Log.v("loader finished" , "inside loader finished");
-//        contactCursor = data;
-//
-//        contactAdapter = new ContactAdapter(data);
-//        contactRecyclerView.setItemAnimator(new DefaultItemAnimator());
-//        contactRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-//        contactRecyclerView.setAdapter(contactAdapter);
-//
-//        Log.v("display" , Integer.toString(contactCursor.getCount()));
+        contactCursor = data;
+
+        contactAdapter = new ContactAdapter(data);
+        contactRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        contactRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        contactRecyclerView.setAdapter(contactAdapter);
+
+        Log.v("display" , Integer.toString(contactCursor.getCount()));
 
 
     }
@@ -85,4 +76,5 @@ Log.v("loader finished" , "inside loader finished");
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         getSupportLoaderManager().restartLoader(LOADER_ID , null , this);
     }
+
 }
