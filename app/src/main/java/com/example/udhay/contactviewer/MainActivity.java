@@ -4,25 +4,22 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import java.net.URI;
-
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
-private final Uri contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+private Uri contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
 private Cursor contactCursor;
 private static final int LOADER_ID = 100;
 private RecyclerView contactRecyclerView;
@@ -31,11 +28,11 @@ private ContactAdapter contactAdapter;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 24);
-        if(ContextCompat.checkSelfPermission(this , Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 24);
-        }
+        ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.READ_CONTACTS}, 24);
+
+        contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
         contactRecyclerView = findViewById(R.id.contact_recycle);
+        contactRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         LoaderManager manager = getSupportLoaderManager();
         Loader<Cursor> loader = manager.getLoader(LOADER_ID);
         if(loader == null){

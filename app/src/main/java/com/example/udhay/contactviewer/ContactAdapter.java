@@ -4,7 +4,6 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +25,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
     @Override
     public void onBindViewHolder(@NonNull contactViewHolder holder, int position) {
 
-        Log.v("Adapter position" , Integer.toString(position));
         try {
             if (contactCursor.moveToPosition(position)) {
                 holder.contactName.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
                 holder.contactNumber.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
 
-
+                holder.lineView.setVisibility(View.VISIBLE);
             }
         }
         catch (Exception ex){
@@ -49,10 +47,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
     public class contactViewHolder extends RecyclerView.ViewHolder {
         private TextView contactName;
         private TextView contactNumber;
+        private View lineView;
         public contactViewHolder(View view){
             super(view);
             contactName = view.findViewById(R.id.contact_name);
             contactNumber = view.findViewById(R.id.contact_number);
+            lineView = view.findViewById(R.id.view);
         }
     }
 }
