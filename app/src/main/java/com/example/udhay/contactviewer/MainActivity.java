@@ -1,7 +1,7 @@
 package com.example.udhay.contactviewer;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -16,7 +16,9 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 private Uri contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
@@ -42,7 +44,23 @@ private ContactAdapter contactAdapter;
         }
 
 
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0 , ItemTouchHelper.LEFT){
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
 
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+               String number =  ((ContactAdapter.contactViewHolder)viewHolder).getContactNumber().trim();
+               contactAdapter.notifyDataSetChanged();
+                Intent dial = new Intent(Intent.ACTION_DIAL);
+                dial.setData(Uri.parse("tel:"+number));
+                startActivity(dial);
+            }
+        }).attachToRecyclerView(contactRecyclerView);
+
+        Toast.makeText(this , "swipe left to call " , Toast.LENGTH_LONG).show();
     }
 
     @NonNull
@@ -74,4 +92,8 @@ Log.v("loader finished" , "inside loader finished");
         getSupportLoaderManager().restartLoader(LOADER_ID , null , this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 }

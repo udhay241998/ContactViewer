@@ -54,6 +54,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
             contactNumber = view.findViewById(R.id.contact_number);
             lineView = view.findViewById(R.id.view);
         }
+
+        public String getContactNumber() {
+            return contactNumber.getText().toString();
+        }
+
+        public String getContactName() {
+            return contactName.getText().toString();
+        }
     }
 }
 
