@@ -29,7 +29,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
             if (contactCursor.moveToPosition(position)) {
                 holder.contactName.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
                 holder.contactNumber.setText(contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
-
                 holder.lineView.setVisibility(View.VISIBLE);
             }
         }
