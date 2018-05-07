@@ -40,15 +40,51 @@ private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+        } else {
 
-            PackageManager manager = getPackageManager();
-            int hasPermission = manager.checkPermission ("android.permission.READ_CONTACTS", "com.example.udhay.contactviewer");
-            if (hasPermission == manager.PERMISSION_GRANTED) {
-                loadContact();
+            contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+            contactRecyclerView = findViewById(R.id.contact_recycle);
+            contactRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+            LoaderManager manager = getSupportLoaderManager();
+            Loader<Cursor> loader = manager.getLoader(LOADER_ID);
+            if (loader == null) {
+                manager.initLoader(LOADER_ID, null, this).forceLoad();
+            } else {
+                manager.restartLoader(LOADER_ID, null, this).forceLoad();
             }
 
-        } else {
-                loadContact();
+
+            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                    String number = prepareNumber(((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim());
+                    if(direction == ItemTouchHelper.LEFT) {
+                        contactAdapter.notifyDataSetChanged();
+                        Intent dial = new Intent(Intent.ACTION_DIAL);
+                        dial.setData(Uri.parse("tel:" + number));
+                        startActivity(dial);
+                    }
+                    if(direction == ItemTouchHelper.RIGHT){
+                        contactAdapter.notifyDataSetChanged();
+                        Intent whatsAppIntent = new Intent(Intent.ACTION_VIEW);
+                        whatsAppIntent.setType("text/plain");
+                        whatsAppIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone="+number));
+                        try {
+                            whatsAppIntent.setPackage("com.whatsapp");
+                        }catch(Exception ex){
+                            Toast.makeText(MainActivity.this , "Whats app is not installed" , Toast.LENGTH_SHORT).show();
+                        }
+                        startActivity(whatsAppIntent);
+                    }
+                }
+            }).attachToRecyclerView(contactRecyclerView);
+
+            Toast.makeText(this, "swipe left to call ", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -85,38 +121,13 @@ Log.v("loader finished" , "inside loader finished");
     protected void onResume() {
         super.onResume();
     }
-
-    public void loadContact() {
-
-        contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        contactRecyclerView = findViewById(R.id.contact_recycle);
-        contactRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        LoaderManager manager = getSupportLoaderManager();
-        Loader<Cursor> loader = manager.getLoader(LOADER_ID);
-        if (loader == null) {
-            manager.initLoader(LOADER_ID, null, this).forceLoad();
-        } else {
-            manager.restartLoader(LOADER_ID, null, this).forceLoad();
+    //this method is used to check the country code
+    private String prepareNumber(String number){
+        if(number.charAt(0) == '+'){
+            return number;
         }
-
-
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                String number = ((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim();
-                contactAdapter.notifyDataSetChanged();
-                Intent dial = new Intent(Intent.ACTION_DIAL);
-                dial.setData(Uri.parse("tel:" + number));
-                startActivity(dial);
-            }
-        }).attachToRecyclerView(contactRecyclerView);
-
-        Toast.makeText(this, "swipe left to call ", Toast.LENGTH_LONG).show();
+        else{
+            return ("+91" + number);
+        }
     }
-
 }
