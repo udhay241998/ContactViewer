@@ -23,7 +23,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
-private Uri contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+private final Uri  contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
 private Cursor contactCursor;
 private static final int LOADER_ID = 100;
 private RecyclerView contactRecyclerView;
@@ -36,56 +36,24 @@ private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        contactRecyclerView = findViewById(R.id.contact_recycle);
+        contactRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
-        } else {
-
-            contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-            contactRecyclerView = findViewById(R.id.contact_recycle);
-            contactRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-            LoaderManager manager = getSupportLoaderManager();
-            Loader<Cursor> loader = manager.getLoader(LOADER_ID);
-            if (loader == null) {
-                manager.initLoader(LOADER_ID, null, this).forceLoad();
-            } else {
-                manager.restartLoader(LOADER_ID, null, this).forceLoad();
+            PackageManager manager = getPackageManager();
+            int hasPermission = manager.checkPermission("android.permission.READ_CONTACTS", "com.example.udhay.contactviewer");
+            if (hasPermission == manager.PERMISSION_GRANTED) {
+                loadContact();
+            }
+        }  else {
+                loadContact();
             }
 
 
-            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-                @Override
-                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                    return false;
-                }
 
-                @Override
-                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                    String number = prepareNumber(((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim());
-                    if(direction == ItemTouchHelper.LEFT) {
-                        contactAdapter.notifyDataSetChanged();
-                        Intent dial = new Intent(Intent.ACTION_DIAL);
-                        dial.setData(Uri.parse("tel:" + number));
-                        startActivity(dial);
-                    }
-                    if(direction == ItemTouchHelper.RIGHT){
-                        contactAdapter.notifyDataSetChanged();
-                        Intent whatsAppIntent = new Intent(Intent.ACTION_VIEW);
-                        whatsAppIntent.setType("text/plain");
-                        whatsAppIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone="+number));
-                        try {
-                            whatsAppIntent.setPackage("com.whatsapp");
-                        }catch(Exception ex){
-                            Toast.makeText(MainActivity.this , "Whats app is not installed" , Toast.LENGTH_SHORT).show();
-                        }
-                        startActivity(whatsAppIntent);
-                    }
-                }
-            }).attachToRecyclerView(contactRecyclerView);
-
-            Toast.makeText(this, "swipe left to call ", Toast.LENGTH_LONG).show();
-        }
     }
 
     @NonNull
@@ -129,5 +97,47 @@ Log.v("loader finished" , "inside loader finished");
         else{
             return ("+91" + number);
         }
+    }
+    private void loadContact(){
+        LoaderManager manager = getSupportLoaderManager();
+        Loader<Cursor> loader = manager.getLoader(LOADER_ID);
+        if (loader == null) {
+            manager.initLoader(LOADER_ID, null, this).forceLoad();
+        } else {
+            manager.restartLoader(LOADER_ID, null, this).forceLoad();
+        }
+
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                String number = prepareNumber(((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim());
+                if(direction == ItemTouchHelper.LEFT) {
+                    contactAdapter.notifyDataSetChanged();
+                    Intent dial = new Intent(Intent.ACTION_DIAL);
+                    dial.setData(Uri.parse("tel:" + number));
+                    startActivity(dial);
+                }
+                if(direction == ItemTouchHelper.RIGHT){
+                    contactAdapter.notifyDataSetChanged();
+                    Intent whatsAppIntent = new Intent(Intent.ACTION_VIEW);
+                    whatsAppIntent.setType("text/plain");
+                    whatsAppIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone="+number));
+                    try {
+                        whatsAppIntent.setPackage("com.whatsapp");
+                    }catch(Exception ex){
+                        Toast.makeText(MainActivity.this , "Whats app is not installed" , Toast.LENGTH_SHORT).show();
+                    }
+                    startActivity(whatsAppIntent);
+                }
+            }
+        }).attachToRecyclerView(contactRecyclerView);
+
+        Toast.makeText(this, "swipe left to call ", Toast.LENGTH_LONG).show();
     }
 }
