@@ -54,7 +54,7 @@ private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
             }
 
 
-            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
                 @Override
                 public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                     return false;
@@ -62,11 +62,25 @@ private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
 
                 @Override
                 public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                    String number = ((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim();
-                    contactAdapter.notifyDataSetChanged();
-                    Intent dial = new Intent(Intent.ACTION_DIAL);
-                    dial.setData(Uri.parse("tel:" + number));
-                    startActivity(dial);
+                    String number = prepareNumber(((ContactAdapter.contactViewHolder) viewHolder).getContactNumber().trim());
+                    if(direction == ItemTouchHelper.LEFT) {
+                        contactAdapter.notifyDataSetChanged();
+                        Intent dial = new Intent(Intent.ACTION_DIAL);
+                        dial.setData(Uri.parse("tel:" + number));
+                        startActivity(dial);
+                    }
+                    if(direction == ItemTouchHelper.RIGHT){
+                        contactAdapter.notifyDataSetChanged();
+                        Intent whatsAppIntent = new Intent(Intent.ACTION_VIEW);
+                        whatsAppIntent.setType("text/plain");
+                        whatsAppIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone="+number));
+                        try {
+                            whatsAppIntent.setPackage("com.whatsapp");
+                        }catch(Exception ex){
+                            Toast.makeText(MainActivity.this , "Whats app is not installed" , Toast.LENGTH_SHORT).show();
+                        }
+                        startActivity(whatsAppIntent);
+                    }
                 }
             }).attachToRecyclerView(contactRecyclerView);
 
@@ -106,5 +120,14 @@ Log.v("loader finished" , "inside loader finished");
     @Override
     protected void onResume() {
         super.onResume();
+    }
+    //this method is used to check the country code
+    private String prepareNumber(String number){
+        if(number.charAt(0) == '+'){
+            return number;
+        }
+        else{
+            return ("+91" + number);
+        }
     }
 }
