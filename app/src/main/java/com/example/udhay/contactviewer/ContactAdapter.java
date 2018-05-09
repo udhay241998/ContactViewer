@@ -62,5 +62,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
             return contactName.getText().toString();
         }
     }
+
+    public void swapCursor(Cursor cursor){
+        contactCursor = cursor;
+    }
 }
 

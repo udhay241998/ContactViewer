@@ -1,9 +1,12 @@
 package com.example.udhay.contactviewer;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
@@ -23,6 +26,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.example.udhay.contactviewer.contact_database.ContactOpenHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 private final Uri  contactUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
@@ -78,6 +83,7 @@ Log.v("loader finished" , "inside loader finished");
         contactRecyclerView.setAdapter(contactAdapter);
 
         Log.v("display" , Integer.toString(contactCursor.getCount()));
+        refresh();
 
 
     }
@@ -161,5 +167,32 @@ Log.v("loader finished" , "inside loader finished");
                 return false;
         }
 
+    }
+
+    public void refresh(){
+        if(contactCursor != null){
+            SQLiteDatabase customDatabase =  new ContactOpenHelper(this).getWritableDatabase();
+            ContentValues values = new ContentValues();
+            contactCursor.moveToFirst();
+            do{
+                values.put(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.COLUMN_NAME ,
+                        contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
+                try {
+                    customDatabase.insert(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME, null, values);
+                }catch (SQLiteConstraintException ex){
+
+                }
+                values.clear();
+            }while(contactCursor.moveToNext());
+
+
+            Cursor modifiedContactCursor = customDatabase.query(true , com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME ,
+                    null , null , null , null , null ,
+                    null  , null);
+
+            contactAdapter.swapCursor(modifiedContactCursor);
+            contactAdapter.notifyDataSetChanged();
+            customDatabase.close();
+        }
     }
 }
