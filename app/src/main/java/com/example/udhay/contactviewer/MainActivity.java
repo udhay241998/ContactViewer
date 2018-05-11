@@ -32,7 +32,7 @@ import com.example.udhay.contactviewer.contact_database.ContactOpenHelper;
 import com.example.udhay.contactviewer.contact_database.ContactsContract;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    private final Uri contactUri = android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+    public static final Uri contactUri = android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
     public static Cursor contactCursor;
     private static final int LOADER_ID = 100;
     public static RecyclerView contactRecyclerView;
@@ -193,5 +193,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.COLUMN_NAME));
             Toast.makeText(v.getContext(), "name : " + name, Toast.LENGTH_SHORT).show();
 
+            Intent intent = new Intent(v.getContext() , DetailContactActivity.class);
+            intent.putExtra("name" , name);
+            v.getContext().startActivity(intent);
         }
     }
