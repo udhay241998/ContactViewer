@@ -12,7 +12,7 @@ public class ContactOpenHelper extends SQLiteOpenHelper {
     // SqlLite statement to create a database
     private static final String CREATE_TABLE = "CREATE TABLE  " +
             ContactsContract.Contacts.TABLE_NAME + " ( "+
-            ContactsContract.Contacts.COLUMN_NAME + " TEXT  " + " ) ";
+            ContactsContract.Contacts.COLUMN_NAME + " TEXT  " + " UNIQUE " + " ) ";
 
     //SqlLite statement to drop the table;
     private static final String DELETE_TABLE = "DROP TABLE IF EXISTS " +ContactsContract.Contacts.TABLE_NAME;
