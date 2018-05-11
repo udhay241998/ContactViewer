@@ -2,17 +2,17 @@ package com.example.udhay.contactviewer;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.CursorIndexOutOfBoundsException;
-import android.database.sqlite.SQLiteConstraintException;
+
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -25,17 +25,18 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
-import com.example.udhay.contactviewer.contact_database.ContactsContract;
 
 import com.example.udhay.contactviewer.contact_database.ContactOpenHelper;
+import com.example.udhay.contactviewer.contact_database.ContactsContract;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private final Uri contactUri = android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-    private Cursor contactCursor;
+    public static Cursor contactCursor;
     private static final int LOADER_ID = 100;
-    private RecyclerView contactRecyclerView;
-    private ContactAdapter contactAdapter;
+    public static RecyclerView contactRecyclerView;
+    public static ContactAdapter contactAdapter;
 
     // Request code for READ_CONTACTS. It can be any number > 0.
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(new Intent(this, whatsAppDirect.class));
                 return true;
             case R.id.refresh:
-               getSupportLoaderManager().restartLoader(LOADER_ID ,  null , this).forceLoad();
+                getSupportLoaderManager().restartLoader(LOADER_ID, null, this).forceLoad();
                 return true;
             default:
                 return false;
@@ -175,87 +176,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void refresh() {
 
-        ContentValues contactValue = new ContentValues();
-        ContactOpenHelper openHelper = new ContactOpenHelper(this);
-        SQLiteDatabase database = openHelper.getWritableDatabase();
+        ContactsReload refresh = new ContactsReload(this);
+        refresh.execute(contactCursor);
+    }
 
-        database.delete(ContactsContract.Contacts.TABLE_NAME , null , null);
-        for(int i = 0 ; i <contactCursor.getCount() ; i++){
-
-            contactCursor.moveToPosition(i);
-
-            String name = contactCursor.getString(contactCursor.getColumnIndex(android.provider.ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            contactValue.put(ContactsContract.Contacts.COLUMN_NAME, name);
-
-
-            database.insert(ContactsContract.Contacts.TABLE_NAME, null, contactValue);
-
-            contactValue.clear();
+}
+    class ContactClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            int position = MainActivity.contactRecyclerView.getChildAdapterPosition(v);
+            position += 1;
+            ContactOpenHelper openHelper = new ContactOpenHelper(v.getContext());
+            Cursor cursor = openHelper.getWritableDatabase().query(ContactsContract.Contacts.TABLE_NAME , new String[]{ContactsContract.Contacts.COLUMN_NAME },
+                    ContactsContract.Contacts._ID+" = ? " , new String[]{Integer.toString(position)} , null , null ,null);
+            cursor.moveToFirst();
+            String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.COLUMN_NAME));
+            Toast.makeText(v.getContext(), "name : " + name, Toast.LENGTH_SHORT).show();
 
         }
-
-
-        database = openHelper.getReadableDatabase();
-        Cursor cursor = database.query(ContactsContract.Contacts.TABLE_NAME ,
-                new String[]{ContactsContract.Contacts.COLUMN_NAME} ,
-                null , null ,null , null ,null);
-
-        contactAdapter.swapCursor(cursor);
-        contactAdapter.notifyDataSetChanged();
-
-
-
-        Toast.makeText(this, "no of contact in contact cursor"+Integer.toString(contactCursor.getCount()), Toast.LENGTH_SHORT).show();
-
-        Toast.makeText(this, "no of contact in custom cursor"+Integer.toString(cursor.getCount()), Toast.LENGTH_SHORT).show();
-
-        database.close();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /* this set of code tries to insert the database
-
-//        if(contactCursor != null){
-//            SQLiteDatabase customDatabase =  new ContactOpenHelper(this).getWritableDatabase();
-//            ContentValues values = new ContentValues();
-//            contactCursor.moveToFirst();
-//            do{
-//                values.put(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.COLUMN_NAME ,
-//                        contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
-//                try {
-//                    customDatabase.insert(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME, null, values);
-//                }catch (SQLiteConstraintException ex){
-//
-//                }
-//                values.clear();
-//            }while(contactCursor.moveToNext());
-//
-//
-//            Cursor modifiedContactCursor = customDatabase.query(true , com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME ,
-//                    null , null , null , null , null ,
-//                    null  , null);
-//
-//            contactAdapter.swapCursor(modifiedContactCursor);
-//            contactAdapter.notifyDataSetChanged();
-//            customDatabase.close();
-//        }
-//    */
     }
-}

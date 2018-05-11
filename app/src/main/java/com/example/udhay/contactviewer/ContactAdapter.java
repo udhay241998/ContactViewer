@@ -19,6 +19,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
     @Override
     public contactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_contact , parent  ,false);
+        view.setOnClickListener(new ContactClickListener());
         return new contactViewHolder(view);
     }
 
@@ -34,6 +35,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
             holder.contactNumber.setText("No number");
         }
 
+
     }
 
     @Override
@@ -48,6 +50,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
             super(view);
             contactName = view.findViewById(R.id.contact_name);
             contactNumber = view.findViewById(R.id.contact_number);
+
         }
 
         public String getContactNumber() {
@@ -57,6 +60,8 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
         public String getContactName() {
             return contactName.getText().toString();
         }
+
+
     }
 
     public void swapCursor(Cursor cursor){
