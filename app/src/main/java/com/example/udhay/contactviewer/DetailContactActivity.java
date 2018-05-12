@@ -66,14 +66,23 @@ class customAdapter extends RecyclerView.Adapter<customAdapter.NumberViewHolder>
     @Override
     public NumberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view =LayoutInflater.from(parent.getContext()).inflate(R.layout.detail_contact_number , parent , false);
-        Log.v("recyclerView" , "inside onCreteViewholder");
-        return new NumberViewHolder(view);
+
+        return  new NumberViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NumberViewHolder holder, int position) {
         mCursor.moveToPosition(position);
         holder.getNumber().setText(mCursor.getString(mCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
+        final NumberViewHolder temoHolder = holder;
+        holder.getNumber().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String contactNumber = temoHolder.getNumber().getText().toString();
+                Toast.makeText(mContext , contactNumber , Toast.LENGTH_SHORT ).show();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -82,7 +91,7 @@ class customAdapter extends RecyclerView.Adapter<customAdapter.NumberViewHolder>
     }
 
     class NumberViewHolder extends RecyclerView.ViewHolder {
-        private TextView number;
+        public TextView number;
         public NumberViewHolder(View view){
             super(view);
             number = view.findViewById(R.id.detail_number);
