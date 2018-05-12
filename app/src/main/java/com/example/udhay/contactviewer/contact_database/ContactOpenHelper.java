@@ -7,18 +7,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class ContactOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "contact.db";
-    private static int DATABASE_VERSION = 3;
+    private static int DATABASE_VERSION = 4;
 
     // SqlLite statement to create a database
     private static final String CREATE_TABLE = "CREATE TABLE  " +
             ContactsContract.Contacts.TABLE_NAME + " ( "+
             ContactsContract.Contacts._ID + " INTEGER PRIMARY KEY AUTOINCREMENT , "+
             ContactsContract.Contacts.COLUMN_NAME + " TEXT  " + " UNIQUE ,"+
-            ContactsContract.Contacts.DEFAULT_NUMBER + " INTEGER , "+
-            ContactsContract.Contacts.NUMBER_1 + " INTEGER , "+
-            ContactsContract.Contacts.NUMBER_2 + " INTEGER , "+
-            ContactsContract.Contacts.NUMBER_3 + " INTEGER , "+
-            ContactsContract.Contacts.NUMBER_4 + " INTEGER  "
+            ContactsContract.Contacts.DEFAULT_NUMBER + " TEXT  "
             + " ) ";
 
     //SqlLite statement to drop the table;

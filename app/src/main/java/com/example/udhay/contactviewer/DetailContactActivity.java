@@ -1,8 +1,10 @@
 package com.example.udhay.contactviewer;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -17,15 +19,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DetailContactActivity extends AppCompatActivity {
+import com.example.udhay.contactviewer.contact_database.ContactOpenHelper;
 
+public class DetailContactActivity extends AppCompatActivity {
+    static String name;
     RecyclerView mRecyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_contact);
         Intent startIntent = getIntent();
-        String name =startIntent.getStringExtra("name");
+        name =startIntent.getStringExtra("name");
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         Cursor cursor = getContentResolver().query(MainActivity.contactUri , new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER} ,
@@ -79,7 +83,7 @@ class customAdapter extends RecyclerView.Adapter<customAdapter.NumberViewHolder>
             @Override
             public boolean onLongClick(View v) {
                 String contactNumber = temoHolder.getNumber().getText().toString();
-                Toast.makeText(mContext , contactNumber , Toast.LENGTH_SHORT ).show();
+                setDefaultNumber(DetailContactActivity.name , contactNumber);
                 return true;
             }
         });
@@ -102,4 +106,24 @@ class customAdapter extends RecyclerView.Adapter<customAdapter.NumberViewHolder>
             return number;
         }
     }
+
+    private void setDefaultNumber(String name , String number){
+        ContactOpenHelper openHelper = new ContactOpenHelper(mContext);
+        SQLiteDatabase database = openHelper.getWritableDatabase();
+        ContentValues defaultNumber = new ContentValues();
+        defaultNumber.put(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.DEFAULT_NUMBER ,number );
+        database.update(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME , defaultNumber,
+                com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.COLUMN_NAME + "=?",
+                new String[]{name});
+        database.close();
+        database = openHelper.getReadableDatabase();
+        Cursor cursor = database.query(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.TABLE_NAME ,
+                new String[]{com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.DEFAULT_NUMBER} ,
+                com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.COLUMN_NAME + "=?" ,
+                new String[]{name} , null , null , null);
+        cursor.moveToFirst();
+        String defaultContactNumber = cursor.getString(cursor.getColumnIndex(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.DEFAULT_NUMBER));
+        Toast.makeText(mContext , defaultContactNumber , Toast.LENGTH_SHORT ).show();
+    }
+
 }

@@ -29,7 +29,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.contactV
         try {
             if (contactCursor.moveToPosition(position)) {
                 holder.contactName.setText(contactCursor.getString((contactCursor.getColumnIndex(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.COLUMN_NAME))));
-                }
+                holder.contactNumber.setText(contactCursor.getString((contactCursor.getColumnIndex(com.example.udhay.contactviewer.contact_database.ContactsContract.Contacts.DEFAULT_NUMBER))));
+
+            }
         }
         catch (Exception ex){
             holder.contactNumber.setText("No number");

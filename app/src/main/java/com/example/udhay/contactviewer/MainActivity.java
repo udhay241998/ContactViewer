@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int LOADER_ID = 100;
     public static RecyclerView contactRecyclerView;
     public static ContactAdapter contactAdapter;
+    public static int launch = 0;
 
     // Request code for READ_CONTACTS. It can be any number > 0.
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
@@ -61,6 +63,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             loadContact();
         }
 
+        final String PREFS_NAME = "MyPrefsFile";
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+        if (settings.getBoolean("my_first_time", true)) {
+            //the app is being launched for first time, do something
+            Log.d("Comments", "First time");
+
+            launch ++;
+            // first time task
+
+            // record the fact that the app has been started at least once
+            settings.edit().putBoolean("my_first_time", false).commit();
+        }
 
     }
 
@@ -180,6 +196,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         refresh.execute(contactCursor);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        launch++;
+    }
 }
     class ContactClickListener implements View.OnClickListener {
         @Override
